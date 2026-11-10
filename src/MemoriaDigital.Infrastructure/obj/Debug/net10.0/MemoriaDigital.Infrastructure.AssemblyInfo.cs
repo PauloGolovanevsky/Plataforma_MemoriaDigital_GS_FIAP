@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MemoriaDigital.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+460fca203df14ef458d4386f886210a418745cdd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8ef4f497c95aaad6ce229a710acdd92205fb77e8")]
 [assembly: System.Reflection.AssemblyProductAttribute("MemoriaDigital.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MemoriaDigital.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

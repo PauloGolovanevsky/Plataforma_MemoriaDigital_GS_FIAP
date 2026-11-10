@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "MemoriaDigital.Application/1.0.0": {
+        "dependencies": {
+          "MemoriaDigital.Domain": "1.0.0"
+        },
+        "runtime": {
+          "MemoriaDigital.Application.dll": {}
+        }
+      },
+      "MemoriaDigital.Domain/1.0.0": {
+        "runtime": {
+          "MemoriaDigital.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "MemoriaDigital.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "MemoriaDigital.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

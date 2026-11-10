@@ -6,6 +6,7 @@
     <Project Path="src/MemoriaDigital.Infrastructure/MemoriaDigital.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/MemoriaDigital.IntegrationTests/MemoriaDigital.IntegrationTests.csproj" />
     <Project Path="tests/MemoriaDigital.UnitTests/MemoriaDigital.UnitTests.csproj" />
   </Folder>
 </Solution>

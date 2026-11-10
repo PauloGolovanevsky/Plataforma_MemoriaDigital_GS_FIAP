@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MemoriaDigital.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+148066667e2093bd8fc9ece7ee07c3aee60f0d39")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+62ea8523ba20cafddccaa50ece4545b3830546b3")]
 [assembly: System.Reflection.AssemblyProductAttribute("MemoriaDigital.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MemoriaDigital.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

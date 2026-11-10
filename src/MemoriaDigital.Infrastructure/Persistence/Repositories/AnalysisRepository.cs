@@ -28,19 +28,25 @@ public sealed class AnalysisRepository(ApplicationDbContext dbContext) : IAnalys
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        var query = dbContext.Analyses
-            .FromSqlRaw("SELECT * FROM \"Analyses\" ORDER BY \"CreatedAt\" DESC, \"Id\" DESC")
+        var totalCount = await dbContext.Analyses.CountAsync(cancellationToken);
+        var offset = (pageNumber - 1) * pageSize;
+        var orderedIds = await dbContext.Analyses
+            .FromSqlInterpolated($"SELECT * FROM \"Analyses\" ORDER BY julianday(\"CreatedAt\") DESC, \"Id\" DESC LIMIT {pageSize} OFFSET {offset}")
+            .AsNoTracking()
+            .Select(analysis => analysis.Id)
+            .ToArrayAsync(cancellationToken);
+
+        var loadedItems = await dbContext.Analyses
             .AsNoTracking()
             .AsSplitQuery()
             .Include(analysis => analysis.Input)
             .Include(analysis => analysis.Indicators)
-            .Include(analysis => analysis.Recommendations);
-
-        var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
+            .Include(analysis => analysis.Recommendations)
+            .Where(analysis => orderedIds.Contains(analysis.Id))
             .ToArrayAsync(cancellationToken);
+
+        var itemsById = loadedItems.ToDictionary(analysis => analysis.Id);
+        var items = orderedIds.Select(id => itemsById[id]).ToArray();
 
         return (items, totalCount);
     }

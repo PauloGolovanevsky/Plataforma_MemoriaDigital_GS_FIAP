@@ -29,12 +29,12 @@ public sealed class AnalysisRepository(ApplicationDbContext dbContext) : IAnalys
         CancellationToken cancellationToken = default)
     {
         var query = dbContext.Analyses
+            .FromSqlRaw("SELECT * FROM \"Analyses\" ORDER BY \"CreatedAt\" DESC, \"Id\" DESC")
             .AsNoTracking()
             .AsSplitQuery()
             .Include(analysis => analysis.Input)
             .Include(analysis => analysis.Indicators)
-            .Include(analysis => analysis.Recommendations)
-            .OrderByDescending(analysis => analysis.Id);
+            .Include(analysis => analysis.Recommendations);
 
         var totalCount = await query.CountAsync(cancellationToken);
         var items = await query

@@ -17,6 +17,7 @@ public sealed class AnalysisRepository(ApplicationDbContext dbContext) : IAnalys
     public Task<Analysis?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         dbContext.Analyses
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(analysis => analysis.Input)
             .Include(analysis => analysis.Indicators)
             .Include(analysis => analysis.Recommendations)
@@ -29,10 +30,11 @@ public sealed class AnalysisRepository(ApplicationDbContext dbContext) : IAnalys
     {
         var query = dbContext.Analyses
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(analysis => analysis.Input)
             .Include(analysis => analysis.Indicators)
             .Include(analysis => analysis.Recommendations)
-            .OrderByDescending(analysis => analysis.CreatedAt);
+            .OrderByDescending(analysis => analysis.Id);
 
         var totalCount = await query.CountAsync(cancellationToken);
         var items = await query

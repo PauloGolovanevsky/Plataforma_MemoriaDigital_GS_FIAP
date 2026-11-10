@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MemoriaDigital.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fd5124f4a93dd1c935888c20d506c9c0b1b35e8d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9c35aea75de9d4e81537c04e9dc5e7c08bced450")]
 [assembly: System.Reflection.AssemblyProductAttribute("MemoriaDigital.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MemoriaDigital.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

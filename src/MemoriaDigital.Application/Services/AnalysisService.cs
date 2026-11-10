@@ -29,11 +29,6 @@ public sealed class AnalysisService(IAnalysisRepository analysisRepository) : IA
         Guid id,
         CancellationToken cancellationToken = default)
     {
-        if (id == Guid.Empty)
-        {
-            throw new ArgumentException("Analysis id is required.", nameof(id));
-        }
-
         var analysis = await analysisRepository.GetByIdAsync(id, cancellationToken);
         return analysis is null ? null : ToResponse(analysis);
     }

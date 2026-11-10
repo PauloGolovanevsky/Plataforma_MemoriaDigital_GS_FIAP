@@ -4,7 +4,9 @@ using MemoriaDigital.Domain.Entities;
 
 namespace MemoriaDigital.Application.Services;
 
-public sealed class AnalysisService(IAnalysisRepository analysisRepository) : IAnalysisService
+public sealed class AnalysisService(
+    IAnalysisRepository analysisRepository,
+    IAnalysisEngine analysisEngine) : IAnalysisService
 {
     public async Task<AnalysisResponse> CreateAsync(
         CreateAnalysisRequest request,
@@ -20,6 +22,7 @@ public sealed class AnalysisService(IAnalysisRepository analysisRepository) : IA
             request.MediaType);
 
         var analysis = new Analysis(input);
+        analysisEngine.Analyze(analysis);
         await analysisRepository.AddAsync(analysis, cancellationToken);
 
         return ToResponse(analysis);

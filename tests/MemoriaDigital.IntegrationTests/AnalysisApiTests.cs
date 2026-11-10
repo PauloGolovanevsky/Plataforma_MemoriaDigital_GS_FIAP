@@ -171,8 +171,59 @@ public sealed class AnalysisApiTests
         var analysis = await response.Content.ReadFromJsonAsync<JsonElement>();
 
         // Assert
-        Assert.Equal("Processing", analysis.GetProperty("status").GetString());
+        Assert.Equal("Completed", analysis.GetProperty("status").GetString());
         Assert.Equal("Message", analysis.GetProperty("input").GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public async Task PostSuspiciousLink_PersistsCompletedRiskResult()
+    {
+        // Arrange
+        using var factory = await CreateFactoryAsync();
+        using var client = factory.CreateClient();
+        var request = new
+        {
+            inputType = "Link",
+            content = "https://192.168.0.1/login"
+        };
+
+        // Act
+        using var createResponse = await client.PostAsJsonAsync("/api/analyses", request);
+        var created = await createResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var id = created.GetProperty("id").GetGuid();
+        using var getResponse = await client.GetAsync($"/api/analyses/{id}");
+        var persisted = await getResponse.Content.ReadFromJsonAsync<JsonElement>();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+        Assert.Equal("Completed", persisted.GetProperty("status").GetString());
+        Assert.Equal("Medium", persisted.GetProperty("riskLevel").GetString());
+        Assert.Contains(
+            persisted.GetProperty("indicators").EnumerateArray(),
+            indicator => indicator.GetProperty("code").GetString() == "LINK_IP_ADDRESS");
+    }
+
+    [Fact]
+    public async Task PostImage_PersistsUnsupportedResult()
+    {
+        // Arrange
+        using var factory = await CreateFactoryAsync();
+        using var client = factory.CreateClient();
+        var request = new
+        {
+            inputType = "Image",
+            reference = "uploads/image.png"
+        };
+
+        // Act
+        using var response = await client.PostAsJsonAsync("/api/analyses", request);
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal("Unsupported", result.GetProperty("status").GetString());
+        Assert.True(result.GetProperty("riskLevel").ValueKind == JsonValueKind.Null);
     }
 
     [Fact]

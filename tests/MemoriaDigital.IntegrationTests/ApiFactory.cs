@@ -22,7 +22,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     {
         await using var scope = Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await dbContext.Database.EnsureCreatedAsync();
+        await dbContext.Database.MigrateAsync();
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

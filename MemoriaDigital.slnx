@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MemoriaDigital.Api/MemoriaDigital.Api.csproj" />
+    <Project Path="src/MemoriaDigital.Application/MemoriaDigital.Application.csproj" />
+    <Project Path="src/MemoriaDigital.Domain/MemoriaDigital.Domain.csproj" />
+    <Project Path="src/MemoriaDigital.Infrastructure/MemoriaDigital.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MemoriaDigital.UnitTests/MemoriaDigital.UnitTests.csproj" />
+  </Folder>
+</Solution>

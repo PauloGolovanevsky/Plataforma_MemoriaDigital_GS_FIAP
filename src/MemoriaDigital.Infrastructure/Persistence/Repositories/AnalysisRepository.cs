@@ -17,6 +17,7 @@ public sealed class AnalysisRepository(ApplicationDbContext dbContext) : IAnalys
     public Task<Analysis?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         dbContext.Analyses
             .AsNoTracking()
+            // As coleções são somente leitura nesta consulta; a split query evita combinar duas coleções em um produto de linhas.
             .AsSplitQuery()
             .Include(analysis => analysis.Input)
             .Include(analysis => analysis.Indicators)
@@ -30,6 +31,7 @@ public sealed class AnalysisRepository(ApplicationDbContext dbContext) : IAnalys
     {
         var totalCount = await dbContext.Analyses.CountAsync(cancellationToken);
         var offset = (pageNumber - 1) * pageSize;
+        // Primeiro buscamos os IDs na ordem da página e depois carregamos as relações sem perder essa ordem.
         var orderedIds = await dbContext.Analyses
             .FromSqlInterpolated($"SELECT * FROM \"Analyses\" ORDER BY julianday(\"CreatedAt\") DESC, \"Id\" DESC LIMIT {pageSize} OFFSET {offset}")
             .AsNoTracking()

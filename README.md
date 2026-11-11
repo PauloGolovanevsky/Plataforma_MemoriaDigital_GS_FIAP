@@ -1,343 +1,208 @@
 # Memória Digital
 
-API REST acadêmica desenvolvida para o projeto da FIAP. A aplicação organiza o recebimento e a persistência de entradas que podem conter mensagens, links ou imagens, preparando a análise de possíveis golpes digitais.
+O objetivo é ajudar a organizar a avaliação de conteúdos suspeitos, apresentando indicadores encontrados, nível de risco e recomendações. Os resultados são baseados em regras definidas no projeto.
 
-O projeto demonstra Programação Orientada a Objetos, separação em camadas, injeção de dependência, Entity Framework Core, SQLite, programação assíncrona, API REST e testes automatizados.
+## Integrantes
 
-## Objetivo e problema de negócio
+| Integrante | RM |
+|---|---|
+| Heloísa Fleury Jardim | RM556378 |
+| Juan Fuentes Rufino | RM557673 |
+| Rickelmyn de Souza Ruescas | RM556055 |
+| Paulo Henrique Monteiro Golovanevsky | RM555300 |
+| Pedro Henrique Silva Batista | RM558137 |
 
-Golpes digitais frequentemente utilizam mensagens persuasivas, links suspeitos e outros conteúdos para induzir o usuário a fornecer dados, realizar pagamentos ou acessar páginas não confiáveis. O objetivo do Memória Digital é fornecer uma API capaz de receber essas entradas, registrar o histórico da análise e disponibilizar resultados estruturados quando houver um mecanismo de análise implementado.
+## Funcionalidades
 
-Nesta versão, a API já suporta o cadastro, a consulta e a listagem paginada de análises. A criação registra a análise no estado `Processing`; ainda não existe um analisador que conclua automaticamente o processamento.
+- Recebimento de entradas dos tipos `Message`, `Link` e `Image`.
+- Validação dos dados recebidos, incluindo o formato de URLs.
+- Análise determinística de mensagens e links por meio de regras e padrões conhecidos.
+- Registro de indicadores encontrados, classificação de risco e recomendações.
+- Registro de entradas de imagem, com status `Unsupported`, pois a análise de imagens não está implementada.
+- Consulta de uma análise pelo identificador.
+- Listagem paginada do histórico de análises.
+- Persistência dos dados em SQLite com Entity Framework Core.
+- Documentação dos endpoints por OpenAPI e Scalar.
 
-## Funcionalidades implementadas
+## Como funciona a análise
 
-- Criação de análises com uma única entrada.
-- Entradas do tipo `Message`, `Link` ou `Image`.
-- Validação de mensagens e URLs.
-- Validação de referência ou metadados mínimos para imagens.
-- Persistência em SQLite com Entity Framework Core.
-- Migration inicial.
-- Consulta de análise por identificador.
-- Listagem paginada de análises.
-- Ordenação da paginação por `CreatedAt` decrescente e `Id` como critério secundário.
-- DTOs para entrada e saída da API.
-- Serialização dos enums como strings JSON, como `Processing` e `Message`.
-- Documentação visual com Scalar/OpenAPI.
-- Testes unitários do domínio.
-- Testes de integração HTTP com SQLite em memória.
+A API aplica regras locais para procurar sinais comuns em mensagens e links. Entre os exemplos avaliados estão:
 
-## Limitações atuais
+- Solicitações de senhas ou outros dados de acesso.
+- Mensagens com urgência para realizar pagamentos ou transferências.
+- Ameaças de bloqueio ou perda de acesso.
+- Promessas de prêmios ou benefícios condicionados a alguma ação.
+- Presença de URLs em mensagens.
+- Links com endereço IP, domínio internacionalizado, encurtadores ou padrões de imitação de marcas conhecidas.
 
-- A análise criada permanece em `Processing`.
-- Não há mecanismo de processamento que conclua uma análise.
-- Não há analisadores de mensagem, link ou imagem implementados na API.
-- Imagens não são analisadas; a entrada é apenas validada e registrada.
-- Não existe integração real com inteligência artificial.
-- Não há autenticação ou autorização.
-- Não há frontend.
-- Não há afirmação de fraude ou detecção infalível. O domínio prevê classificação interna de risco, mas os endpoints atuais ainda não produzem uma classificação final.
+Quando uma regra é identificada, a análise pode registrar um indicador com descrição, severidade e evidência, além de recomendações relacionadas ao risco encontrado.
 
-## Tecnologias e ferramentas
+A classificação considera a severidade dos indicadores: baixa vale 1 ponto, média vale 3 e alta vale 5. A pontuação total define o nível de risco: de 0 a 2, baixo; de 3 a 5, médio; a partir de 6, alto. A presença de um único indicador de severidade alta também classifica o resultado como risco alto.
 
-- .NET SDK `10.0.404`, fixado em `global.json`.
-- .NET `net10.0`.
-- ASP.NET Core Web API com Controllers.
-- Entity Framework Core `10.0.14`.
-- SQLite.
-- Scalar.AspNetCore `2.6.0`.
-- Microsoft.AspNetCore.OpenApi `10.0.15`.
-- xUnit `2.9.3`.
-- Microsoft.AspNetCore.Mvc.Testing `10.0.14`.
-- Microsoft.Data.Sqlite `10.0.14` para os testes de integração.
+Uma entrada sem conteúdo alfanumérico pode resultar em `Inconclusive`. Entradas do tipo imagem são registradas como `Unsupported`. Mensagens e links que passam pela análise recebem o status `Completed`.
 
-## Arquitetura
+## Tecnologias
 
-```text
-src/
-├── MemoriaDigital.Api
-├── MemoriaDigital.Application
-├── MemoriaDigital.Domain
-└── MemoriaDigital.Infrastructure
+- C# e .NET 10
+- ASP.NET Core Web API com Controllers
+- Entity Framework Core 10
+- SQLite
+- Scalar e OpenAPI
+- xUnit
+- `WebApplicationFactory` e SQLite em memória para testes de integração
 
-tests/
-├── MemoriaDigital.UnitTests
-└── MemoriaDigital.IntegrationTests
-```
-
-### `MemoriaDigital.Domain`
-
-Contém as entidades, enums e regras centrais do domínio:
-
-- `Analysis`
-- `AnalysisInput`
-- `Indicator`
-- `Recommendation`
-- Estados, tipos de entrada, níveis de risco, severidades e prioridades.
-
-As entidades encapsulam suas coleções e controlam as transições de estado e a classificação determinística prevista para o domínio.
-
-### `MemoriaDigital.Application`
-
-Contém os casos de uso, DTOs e contratos de persistência:
-
-- Criação de análise.
-- Consulta por ID.
-- Listagem paginada.
-- `IAnalysisRepository`.
-- `IAnalysisService`.
-
-Essa camada não expõe diretamente as entidades do domínio para a API.
-
-### `MemoriaDigital.Infrastructure`
-
-Contém a persistência:
-
-- `ApplicationDbContext`.
-- Configurações do EF Core.
-- Repositório de análises.
-- Migration inicial.
-- Relacionamentos entre análise, entrada, indicadores e recomendações.
-
-### `MemoriaDigital.Api`
-
-Contém:
-
-- `AnalysisController`.
-- Configuração de DI.
-- Configuração do SQLite.
-- Serialização JSON dos enums.
-- Scalar/OpenAPI.
-
-### Projetos de teste
-
-`MemoriaDigital.UnitTests` testa principalmente entidades e regras determinísticas do domínio.
-
-`MemoriaDigital.IntegrationTests` testa a API via `WebApplicationFactory`, usando uma conexão SQLite em memória isolada por teste.
-
-## Estrutura de pastas
+## Organização do projeto
 
 ```text
 MemoriaDigital.slnx
-global.json
-README.md
-
 src/
 ├── MemoriaDigital.Api/
-│   ├── Controllers/AnalysisController.cs
-│   ├── Program.cs
-│   ├── appsettings.json
-│   └── Properties/launchSettings.json
 ├── MemoriaDigital.Application/
-│   ├── DTOs/
-│   ├── Interfaces/
-│   └── Services/
 ├── MemoriaDigital.Domain/
-│   ├── Entities/
-│   └── Enums/
 └── MemoriaDigital.Infrastructure/
-    └── Persistence/
-        ├── Configurations/
-        ├── Migrations/
-        └── Repositories/
 
 tests/
 ├── MemoriaDigital.UnitTests/
 └── MemoriaDigital.IntegrationTests/
 ```
 
+- **MemoriaDigital.Domain:** entidades, enums, validações e regras de negócio, incluindo o ciclo de vida das análises e a classificação de risco.
+- **MemoriaDigital.Application:** serviços, casos de uso, DTOs e interfaces que conectam a API ao domínio e à persistência. Também contém o mecanismo determinístico de análise.
+- **MemoriaDigital.Infrastructure:** contexto do Entity Framework Core, configurações de mapeamento, repositórios e migrations do banco de dados.
+- **MemoriaDigital.Api:** controllers, configuração de dependências, banco de dados, tratamento global de exceções e documentação OpenAPI/Scalar.
+- **MemoriaDigital.UnitTests:** testes das regras do domínio e do mecanismo de análise.
+- **MemoriaDigital.IntegrationTests:** testes HTTP da API e de persistência, utilizando banco SQLite em memória.
+
+Uma análise possui uma entrada e pode conter vários indicadores e recomendações. O domínio controla as transições de estado e impede alterações após a finalização da análise.
+
 ## Pré-requisitos
 
-- Windows, Linux ou macOS com suporte ao .NET 10.
-- .NET SDK `10.0.404` ou uma versão compatível com o `global.json`.
-- Acesso ao NuGet para restaurar as dependências.
-- A ferramenta `dotnet-ef` `10.0.14` para criar ou aplicar migrations.
+- .NET SDK compatível com a versão definida em `global.json`.
+- Acesso ao NuGet para restaurar os pacotes.
+- Ferramenta `dotnet-ef` 10.0.14 para executar comandos de migration.
 
-Verifique o SDK com:
+Para conferir a versão do SDK:
 
-```powershell
+```bash
 dotnet --version
 ```
 
-Caso necessário, instale a ferramenta EF Core:
+Caso ainda não tenha a ferramenta do Entity Framework instalada:
 
-```powershell
+```bash
 dotnet tool install --global dotnet-ef --version 10.0.14
 ```
 
-## Configuração e execução da API
+## Executar a aplicação
 
-Na raiz do repositório:
+Na pasta raiz do repositório, restaure as dependências e compile a solução:
 
-```powershell
+```bash
 dotnet restore
 dotnet build
 ```
 
-A connection string padrão está em `src/MemoriaDigital.Api/appsettings.json`:
+A connection string padrão está definida em `src/MemoriaDigital.Api/appsettings.json` e utiliza o arquivo `memoria-digital.db`.
 
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Data Source=memoria-digital.db"
-  }
-}
-```
+Para iniciar a API:
 
-Inicie a API com:
-
-```powershell
+```bash
 dotnet run --project src/MemoriaDigital.Api
 ```
 
-Os perfis de execução estão em `src/MemoriaDigital.Api/Properties/launchSettings.json`.
+Os perfis de execução e as portas locais estão definidos em `src/MemoriaDigital.Api/Properties/launchSettings.json`.
 
-## SQLite e migrations
+## Banco de dados e migrations
 
-Para criar a migration inicial, caso necessário:
+O banco utiliza SQLite e Entity Framework Core. Para aplicar as migrations manualmente, execute na raiz da solução:
 
-```powershell
-dotnet ef migrations add InitialCreate `
-  --project src/MemoriaDigital.Infrastructure `
-  --startup-project src/MemoriaDigital.Api `
-  --output-dir Persistence/Migrations
+```bash
+dotnet ef database update --project src/MemoriaDigital.Infrastructure --startup-project src/MemoriaDigital.Api
 ```
 
-Para criar ou atualizar o banco:
+As migrations ficam em `src/MemoriaDigital.Infrastructure/Persistence/Migrations`.
 
-```powershell
-dotnet ef database update `
-  --project src/MemoriaDigital.Infrastructure `
-  --startup-project src/MemoriaDigital.Api
-```
+## Endpoints
 
-A migration atualmente versionada é `InitialCreate`, localizada em `src/MemoriaDigital.Infrastructure/Persistence/Migrations`.
+A API disponibiliza os seguintes endpoints:
 
-## Testes
-
-Execute todos os testes:
-
-```powershell
-dotnet test
-```
-
-Somente testes unitários:
-
-```powershell
-dotnet test tests/MemoriaDigital.UnitTests
-```
-
-Somente testes de integração:
-
-```powershell
-dotnet test tests/MemoriaDigital.IntegrationTests
-```
-
-Os testes de integração não utilizam o arquivo SQLite de desenvolvimento. Cada fábrica cria uma conexão SQLite em memória e um banco isolado.
-
-## API REST
-
-Os enums enviados e retornados pela API utilizam seus nomes em formato de string.
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/api/analyses` | Cria e executa uma análise para a entrada informada. |
+| `GET` | `/api/analyses/{id}` | Consulta uma análise pelo identificador. |
+| `GET` | `/api/analyses?page=1&pageSize=10` | Lista análises com paginação. |
 
 ### Criar análise
 
-```http
-POST /api/analyses
-Content-Type: application/json
-```
+`POST /api/analyses`
 
-Requisição:
+Exemplo de requisição para uma mensagem:
 
 ```json
 {
   "inputType": "Message",
-  "content": "Mensagem de teste."
+  "content": "Sua conta será bloqueada. Acesse o link para regularizar seu cadastro."
 }
 ```
 
-Resposta: `201 Created`
+Para uma entrada do tipo `Link`, informe uma URL absoluta válida no campo `content`:
 
 ```json
 {
-  "id": "00000000-0000-0000-0000-000000000000",
-  "createdAt": "2026-01-01T12:00:00+00:00",
-  "completedAt": null,
-  "status": "Processing",
-  "riskLevel": null,
-  "input": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "type": "Message",
-    "content": "Mensagem de teste.",
-    "reference": null,
-    "fileName": null,
-    "mediaType": null
-  },
-  "indicators": [],
-  "recommendations": []
+  "inputType": "Link",
+  "content": "https://exemplo.com/atualizacao"
 }
 ```
 
-A análise permanece em `Processing` até existir um mecanismo de processamento.
+A resposta de criação utiliza `201 Created` e apresenta os dados da análise, incluindo status, nível de risco quando aplicável, entrada, indicadores e recomendações.
 
-### Consultar análise por ID
+### Consultar análise
 
-```http
-GET /api/analyses/{id}
-```
+`GET /api/analyses/{id}`
 
-Respostas:
+- `200 OK`: análise encontrada.
+- `404 Not Found`: identificador não encontrado.
 
-- `200 OK` quando a análise existe.
-- `404 Not Found` quando o ID não está registrado.
+### Listar análises
 
-Exemplo:
+`GET /api/analyses?page=1&pageSize=10`
 
-```text
-GET /api/analyses/00000000-0000-0000-0000-000000000000
-```
+- `page`: número da página, a partir de 1.
+- `pageSize`: quantidade de registros por página, entre 1 e 100.
+- `200 OK`: retorna os registros e os dados da paginação.
+- `400 Bad Request`: parâmetros de paginação inválidos.
 
-### Listar análises com paginação
+A listagem é ordenada pela data de criação, da mais recente para a mais antiga. Em caso de empate, o identificador é utilizado como critério secundário.
 
-```http
-GET /api/analyses?page=1&pageSize=10
-```
+## Documentação da API
 
-Parâmetros:
-
-- `page`: número da página, maior ou igual a 1.
-- `pageSize`: quantidade de registros, entre 1 e 100.
-
-Resposta: `200 OK`
-
-```json
-{
-  "items": [],
-  "pageNumber": 1,
-  "pageSize": 10,
-  "totalCount": 0,
-  "totalPages": 0
-}
-```
-
-Parâmetros inválidos retornam `400 Bad Request`. A listagem é ordenada por `CreatedAt` decrescente e, em caso de empate, por `Id` decrescente.
-
-## Scalar/OpenAPI
-
-Em ambiente de desenvolvimento, a API expõe a especificação OpenAPI e a interface visual Scalar.
-
-Com a aplicação em execução, acesse:
+Com a aplicação em execução no ambiente de desenvolvimento, acesse:
 
 ```text
 http://localhost:<porta>/scalar/v1
 ```
 
-O Scalar permite visualizar a documentação e testar os endpoints disponíveis.
+## Testes
 
-## Resumo dos testes
+Para executar todos os testes:
 
-O projeto possui:
+```bash
+dotnet test
+```
 
-- 25 casos de teste unitário para entidades e regras do domínio.
-- 12 casos de teste de integração HTTP para criação, consulta, paginação, validações, serialização dos enums e isolamento do banco.
+Para executar apenas os testes unitários:
 
-Os testes de integração utilizam SQLite em memória e não alteram o banco SQLite usado pela API.
+```bash
+dotnet test tests/MemoriaDigital.UnitTests
+```
+
+Para executar apenas os testes de integração:
+
+```bash
+dotnet test tests/MemoriaDigital.IntegrationTests
+```
+
+## Limitações
+
+- A análise de imagens ainda não está implementada; esses registros recebem o status `Unsupported`.
+- A análise de mensagens e links utiliza regras determinísticas, sem IA.

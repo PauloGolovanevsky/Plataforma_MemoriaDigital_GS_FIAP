@@ -15,6 +15,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
 
     public ApiFactory()
     {
+        // A conexão precisa permanecer aberta durante o teste, pois o banco em memória desaparece ao fechá-la.
         _connection.Open();
     }
 
@@ -22,6 +23,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     {
         await using var scope = Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        // Aplicar migrations aqui mantém o banco de teste igual ao esquema usado pela aplicação.
         await dbContext.Database.MigrateAsync();
     }
 

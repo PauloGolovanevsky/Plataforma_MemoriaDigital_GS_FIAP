@@ -41,6 +41,7 @@ public sealed class DeterministicAnalysisEngine : IAnalysisEngine
     {
         ArgumentNullException.ThrowIfNull(analysis);
 
+        // O motor é determinístico: o mesmo tipo e conteúdo sempre passam pelas mesmas regras.
         switch (analysis.Input.Type)
         {
             case InputType.Message:
@@ -180,6 +181,7 @@ public sealed class DeterministicAnalysisEngine : IAnalysisEngine
 
     private static void AddIndicator(Analysis analysis, string code, string description, IndicatorSeverity severity, string evidence)
     {
+        // Uma regra pode ser acionada por mais de um termo, mas o indicador aparece uma única vez no resultado.
         if (analysis.Indicators.Any(indicator => indicator.Code == code))
         {
             return;
@@ -190,6 +192,7 @@ public sealed class DeterministicAnalysisEngine : IAnalysisEngine
 
     private static void AddRecommendation(Analysis analysis, string code, string description, RecommendationPriority priority)
     {
+        // Recomendações repetidas não acrescentam orientação e deixariam a resposta mais difícil de ler.
         if (analysis.Recommendations.Any(recommendation => recommendation.Code == code))
         {
             return;

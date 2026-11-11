@@ -24,6 +24,7 @@ public sealed class AnalysisConfiguration : IEntityTypeConfiguration<Analysis>
         builder.Property(analysis => analysis.CreatedAt)
             .IsRequired();
 
+        // As relações dependem da análise; ao removê-la, seus dados associados não ficam órfãos no banco.
         builder.HasOne(analysis => analysis.Input)
             .WithOne()
             .HasForeignKey<AnalysisInput>("AnalysisId")

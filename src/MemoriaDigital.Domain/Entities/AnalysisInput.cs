@@ -39,6 +39,7 @@ public sealed class AnalysisInput
 
     private void Validate()
     {
+        // Cada tipo aceita uma forma diferente de evidência; validar aqui evita criar análises impossíveis de interpretar.
         switch (Type)
         {
             case InputType.Message when string.IsNullOrWhiteSpace(Content):

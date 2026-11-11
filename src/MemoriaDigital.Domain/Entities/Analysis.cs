@@ -13,6 +13,7 @@ public sealed class Analysis
 
     public Analysis(AnalysisInput input)
     {
+        // A análise começa em processamento para que indicadores e resultado só sejam definidos pelo fluxo de análise.
         Input = input ?? throw new ArgumentNullException(nameof(input));
         Id = Guid.NewGuid();
         CreatedAt = DateTimeOffset.UtcNow;
@@ -55,6 +56,7 @@ public sealed class Analysis
     {
         EnsureProcessing();
         Status = AnalysisStatus.Completed;
+        // O risco é calculado apenas no final, depois que todos os indicadores foram adicionados.
         RiskLevel = CalculateRiskLevel();
         Finish();
     }
@@ -89,6 +91,7 @@ public sealed class Analysis
 
     private RiskLevel CalculateRiskLevel()
     {
+        // Um único indicador grave já é suficiente para classificar o resultado como alto risco.
         if (_indicators.Any(indicator => indicator.Severity == IndicatorSeverity.High))
         {
             return Enums.RiskLevel.High;

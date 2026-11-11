@@ -23,6 +23,7 @@ public sealed class GlobalExceptionHandlingMiddleware(
 
             if (context.Response.HasStarted)
             {
+                // Depois que a resposta começou, não é seguro trocar o status nem o corpo pelo erro padrão.
                 throw;
             }
 

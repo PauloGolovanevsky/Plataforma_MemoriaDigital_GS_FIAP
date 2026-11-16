@@ -202,7 +202,3 @@ Para executar apenas os testes de integração:
 dotnet test tests/MemoriaDigital.IntegrationTests
 ```
 
-## Limitações
-
-- A análise de imagens ainda não está implementada; esses registros recebem o status `Unsupported`.
-- A análise de mensagens e links utiliza regras determinísticas, sem IA.
